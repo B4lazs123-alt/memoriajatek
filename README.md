@@ -4,8 +4,9 @@
 
 ## 👥 Kollabarátorok
 
-- *[Balázs](https://github.com/B4lazs123-alt)*
-- *[Andris](https://github.com/25c-schmidt-code)*
+<a href="https://github.com/B4lazs123-alt/memoriajatek/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=B4lazs123-alt/memoriajatek" alt="contrib.rocks image" />
+</a>
 
 ## Letöltés
 
