@@ -13,13 +13,15 @@
 - Bernátzki Balázs
 - Schmidt András
 
-## Letöltés
+## 💾 Használat
 
 1. Lokális használat
+
    ```sh
    git clone https://github.com/B4lazs123-alt/memoriajatek
    ```
 2. Online weboldal
+
    ```sh
    https://b4lazs123-alt.github.io/memoriajatek/
    ```
@@ -35,7 +37,7 @@
 [![Markdown][Markdown]][Markdown-url]
 
 
-<!-- Technology References -->
+<!-- Technológiai hivatkozások -->
 
 [HTML5]: https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white
 [HTML5-url]: https://www.w3schools.com/html/
