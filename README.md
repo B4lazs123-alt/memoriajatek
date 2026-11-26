@@ -4,14 +4,18 @@
 
 ## 👥 Kollabarátorok
 
-<a href="https://github.com/B4lazs123-alt/memoriajatek/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=B4lazs123-alt/memoriajatek" alt="contrib.rocks image" />
-</a>
-<br>
-<br>
+<center>
+   <a href="https://github.com/B4lazs123-alt/memoriajatek/graphs/contributors">
+      <img src="https://contrib.rocks/image?repo=B4lazs123-alt/memoriajatek"  alt="contrib.rocks image"/>
+   </a>
+   <br>
+   <br>
 
-- Bernátzki Balázs
-- Schmidt András
+Bernátzki Balázs
+&nbsp;
+Schmidt András
+
+</center>
 
 ## 💾 Használat
 
