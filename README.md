@@ -40,6 +40,12 @@ Schmidt András
 [![Bootstrap][Bootstrap]][Bootstrap-url]
 [![Markdown][Markdown]][Markdown-url]
 
+## 📸 Plug
+
+- **Balázs:** [Instagram](https://www.instagram.com/b_bal_azs11/) • [Linktree](https://linktr.ee/b4lazs123) • [Letterboxd](https://letterboxd.com/B4lazs123/)
+- **Andris:** [Instagram](https://www.instagram.com/andrissch/)
+
+---
 
 <!-- Technológiai hivatkozások -->
 
