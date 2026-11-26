@@ -1,5 +1,5 @@
 # 💭 Memóriajáték
-# ya
+
 > **Egy klasszikus memóriajáték**
 
 ## 👥 Kollabarátorok
