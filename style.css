@@ -14,13 +14,19 @@ body {
 }
 
 .menu-box {
-    background-color: rgba(24, 15, 10, 0.85);
+    background-color: rgba(24, 15, 10, 0.88);
     border: 2px solid #6f4e37;
     border-radius: 16px;
-    padding: 50px 40px;
+    padding: 45px 40px;
     max-width: 440px;
-    margin-top: 15vh;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+    margin-top: 14vh;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75);
+}
+
+.leaderboard-screen {
+    max-width: 540px;
+    margin-top: 6vh;
+    padding: 35px 30px;
 }
 
 .game-title {
@@ -36,7 +42,7 @@ body {
     color: #fff;
     font-weight: 600;
     font-size: 1.25rem;
-    padding: 12px 48px;
+    padding: 12px 40px;
     border-radius: 8px;
     transition: background-color 0.2s, transform 0.15s;
 }
@@ -60,6 +66,7 @@ body {
     border: 1px solid #6f4e37;
     color: #f5ebe0;
     padding: 5px 16px;
+    border-radius: 8px;
 }
 
 .btn-dark-wood:hover {
@@ -74,10 +81,13 @@ body {
 
 #board {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, auto);
     gap: 16px;
+    justify-content: center;
     justify-items: center;
     align-items: center;
+    width: fit-content;
+    margin: 0 auto;
     padding-top: 10px;
 }
 
@@ -145,19 +155,24 @@ body {
     color: #f5ebe0;
     border-radius: 14px;
 }
+
 .leaderboard-box {
-    background-color: rgba(15, 9, 6, 0.7);
+    background-color: rgba(15, 9, 6, 0.75);
     border: 1px solid #6f4e37;
     border-radius: 10px;
-    padding: 15px 18px;
+    padding: 12px 18px;
+    max-height: 55vh;
+    overflow-y: auto;
 }
 
 .leaderboard-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    align-items: center;
+    padding: 9px 4px;
     border-bottom: 1px solid rgba(111, 78, 55, 0.4);
     color: #f5ebe0;
+    font-size: 1rem;
 }
 
 .leaderboard-row:last-child {

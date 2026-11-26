@@ -29,13 +29,23 @@ let instantFinderActive = false;
 let lockBoard = false;
 let lastRunData = null;
 
-document.addEventListener('DOMContentLoaded', renderLeaderboard);
+function ensureMusicPlays() {
+    const audio = document.getElementById('bg-music');
+    if (audio && audio.paused) {
+        audio.play().catch(() => {});
+    }
+}
 
 function showScreen(screenId) {
+    ensureMusicPlays();
     document.getElementById('screen-menu').classList.add('d-none');
+    document.getElementById('screen-leaderboard').classList.add('d-none');
     document.getElementById('screen-game').classList.add('d-none');
     document.getElementById(screenId).classList.remove('d-none');
-    if (screenId === 'screen-menu') renderLeaderboard();
+
+    if (screenId === 'screen-leaderboard') {
+        renderLeaderboard();
+    }
 }
 
 function exitToMenu() {
@@ -267,7 +277,6 @@ async function saveCurrentScore() {
         feedback.classList.remove('d-none', 'text-danger');
         feedback.classList.add('text-success');
         feedback.innerText = 'Elmentve az online ranglistára!';
-        renderLeaderboard();
     } catch (err) {
         saveBtn.disabled = false;
         feedback.classList.remove('d-none', 'text-success');
@@ -282,29 +291,29 @@ async function renderLeaderboard() {
     const listEl = document.getElementById('leaderboard-list');
     if (!listEl) return;
 
-    listEl.innerHTML = '<div class="text-center" style="color: #a89078;">Betöltés...</div>';
+    listEl.innerHTML = '<div class="text-center py-3" style="color: #a89078;">Betöltés...</div>';
 
     try {
         const res = await fetch(`${FIREBASE_URL}/scores.json`);
         const data = await res.json();
 
         if (!data) {
-            listEl.innerHTML = '<div class="text-center" style="color: #a89078;">Még nincs mentett eredmény.</div>';
+            listEl.innerHTML = '<div class="text-center py-3" style="color: #a89078;">Még nincs mentett eredmény.</div>';
             return;
         }
 
         const scores = Object.values(data);
         scores.sort((a, b) => b.clicks - a.clicks || a.seconds - b.seconds);
-        const top5 = scores.slice(0, 5);
+        const top15 = scores.slice(0, 15);
 
-        listEl.innerHTML = top5.map((s, idx) => `
+        listEl.innerHTML = top15.map((s, idx) => `
             <div class="leaderboard-row">
-                <span><b>${idx + 1}.</b> ${escapeHtml(s.name)}</span>
+                <span><b class="me-2" style="color: #d97706;">${idx + 1}.</b> ${escapeHtml(s.name)}</span>
                 <span><b class="text-warning">${s.clicks} katt</b> · ${s.timeStr}</span>
             </div>
         `).join('');
     } catch (err) {
-        listEl.innerHTML = '<div class="text-center text-danger">Nem sikerült betölteni a ranglistát.</div>';
+        listEl.innerHTML = '<div class="text-center py-3 text-danger">Nem sikerült betölteni a ranglistát.</div>';
     }
 }
 
