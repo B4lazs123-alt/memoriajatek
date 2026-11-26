@@ -24,6 +24,7 @@ let steps = 0;
 let seconds = 0;
 let timerInterval = null;
 let gameStarted = false;
+let gameEnded = false;
 let flippedCards = [];
 let instantFinderActive = false;
 let lockBoard = false;
@@ -50,6 +51,7 @@ function showScreen(screenId) {
 
 function exitToMenu() {
     clearInterval(timerInterval);
+    gameEnded = true;
     showScreen('screen-menu');
 }
 
@@ -60,6 +62,7 @@ function startGame() {
     steps = 0;
     seconds = 0;
     gameStarted = false;
+    gameEnded = false;
     flippedCards = [];
     instantFinderActive = false;
     lockBoard = false;
@@ -127,7 +130,7 @@ function startTimer() {
 }
 
 function handleCardClick(card) {
-    if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched') || clicksLeft <= 0) return;
+    if (gameEnded || lockBoard || card.classList.contains('flipped') || card.classList.contains('matched') || clicksLeft <= 0) return;
 
     startTimer();
     clicksLeft--;
@@ -138,13 +141,16 @@ function handleCardClick(card) {
         card.classList.add('bonus', 'matched');
         if (card.dataset.value === '+3') {
             clicksLeft += 3;
+            updateUI();
+            checkGameOver();
         } else if (card.dataset.value === 'finder') {
             instantFinderActive = true;
+            updateUI();
+            checkGameOver();
         } else if (card.dataset.value === 'lightning') {
+            updateUI();
             triggerLightning();
         }
-        updateUI();
-        checkGameOver();
         return;
     }
 
@@ -177,8 +183,10 @@ function handleCardClick(card) {
             c2.classList.add('matched');
             flippedCards = [];
             lockBoard = false;
+            updateUI();
             checkGameOver();
         } else {
+            updateUI();
             setTimeout(() => {
                 c1.classList.remove('flipped');
                 c2.classList.remove('flipped');
@@ -187,8 +195,11 @@ function handleCardClick(card) {
                 checkGameOver();
             }, 750);
         }
+        return;
     }
+
     updateUI();
+    checkGameOver();
 }
 
 function triggerLightning() {
@@ -202,6 +213,7 @@ function triggerLightning() {
     setTimeout(() => {
         hiddenCards.forEach(c => c.classList.remove('peeked'));
         lockBoard = false;
+        checkGameOver();
     }, 700);
 }
 
@@ -213,20 +225,34 @@ function updateUI() {
 }
 
 function checkGameOver() {
-    const unmatchedPairs = document.querySelectorAll('.game-card[data-type="pair"]:not(.matched)');
-    if (unmatchedPairs.length === 0) {
+    if (gameEnded || lockBoard) return;
+
+    const totalPairs = cardImages.length;
+    const matchedCards = document.querySelectorAll('.game-card[data-type="pair"].matched').length;
+    const pairsFound = Math.floor(matchedCards / 2);
+
+    if (pairsFound === totalPairs) {
+        gameEnded = true;
         clearInterval(timerInterval);
         const finalTime = document.getElementById('timer').innerText;
-        lastRunData = { clicks: clicksLeft, timeStr: finalTime, seconds: seconds };
-        showEndModal('Nyertél!', `Idő: <b>${finalTime}</b> | Lépések: <b>${steps}</b> | Maradt kattintás: <b>${clicksLeft}</b>`, true);
-    } else if (clicksLeft <= 0 && !lockBoard) {
+        lastRunData = { pairs: pairsFound, clicks: clicksLeft, timeStr: finalTime, seconds: seconds };
+        showEndModal(
+            'Nyertél!',
+            `Idő: <b>${finalTime}</b> | Lépések: <b>${steps}</b> | Maradt kattintás: <b>${clicksLeft}</b>`
+        );
+    } else if (clicksLeft <= 0) {
+        gameEnded = true;
         clearInterval(timerInterval);
-        lastRunData = null;
-        showEndModal('Elfogytak a kattintások!', `Lépések száma: <b>${steps}</b>`, false);
+        const finalTime = document.getElementById('timer').innerText;
+        lastRunData = { pairs: pairsFound, clicks: 0, timeStr: finalTime, seconds: seconds };
+        showEndModal(
+            'Elfogytak a kattintások!',
+            `Megtalált párok: <b>${pairsFound}/${totalPairs}</b> | Idő: <b>${finalTime}</b> | Lépések: <b>${steps}</b>`
+        );
     }
 }
 
-function showEndModal(title, htmlText, isWin) {
+function showEndModal(title, htmlText) {
     document.getElementById('modal-title').innerText = title;
     document.getElementById('modal-text').innerHTML = htmlText;
 
@@ -234,16 +260,13 @@ function showEndModal(title, htmlText, isWin) {
     const feedback = document.getElementById('save-feedback');
     const saveBtn = document.getElementById('btn-save-score');
 
-    if (isWin) {
-        saveBox.classList.remove('d-none');
-        feedback.classList.add('d-none');
-        saveBtn.disabled = false;
-    } else {
-        saveBox.classList.add('d-none');
-    }
+    saveBox.classList.remove('d-none');
+    feedback.classList.add('d-none');
+    saveBtn.disabled = false;
 
-    const modal = new bootstrap.Modal(document.getElementById('endGameModal'));
-    setTimeout(() => modal.show(), 350);
+    const modalEl = document.getElementById('endGameModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    setTimeout(() => modal.show(), 250);
 }
 
 async function saveCurrentScore() {
@@ -259,6 +282,7 @@ async function saveCurrentScore() {
 
     const newEntry = {
         name: name,
+        pairs: lastRunData.pairs,
         clicks: lastRunData.clicks,
         timeStr: lastRunData.timeStr,
         seconds: lastRunData.seconds,
@@ -302,14 +326,18 @@ async function renderLeaderboard() {
             return;
         }
 
-        const scores = Object.values(data);
-        scores.sort((a, b) => b.clicks - a.clicks || a.seconds - b.seconds);
+        const scores = Object.values(data).map(s => ({
+            ...s,
+            pairs: s.pairs !== undefined ? s.pairs : cardImages.length
+        }));
+
+        scores.sort((a, b) => b.pairs - a.pairs || b.clicks - a.clicks || a.seconds - b.seconds);
         const top15 = scores.slice(0, 15);
 
         listEl.innerHTML = top15.map((s, idx) => `
             <div class="leaderboard-row">
                 <span><b class="me-2" style="color: #d97706;">${idx + 1}.</b> ${escapeHtml(s.name)}</span>
-                <span><b class="text-warning">${s.clicks} katt</b> · ${s.timeStr}</span>
+                <span><b class="text-info">${s.pairs}/6 pár</b> · <b class="text-warning">${s.clicks} katt</b> · ${s.timeStr}</span>
             </div>
         `).join('');
     } catch (err) {
