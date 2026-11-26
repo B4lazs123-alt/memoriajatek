@@ -24,22 +24,34 @@ let steps = 0;
 let seconds = 0;
 let timerInterval = null;
 let gameStarted = false;
+let gameEnded = false;
 let flippedCards = [];
 let instantFinderActive = false;
 let lockBoard = false;
 let lastRunData = null;
 
-document.addEventListener('DOMContentLoaded', renderLeaderboard);
+function ensureMusicPlays() {
+    const audio = document.getElementById('bg-music');
+    if (audio && audio.paused) {
+        audio.play().catch(() => {});
+    }
+}
 
 function showScreen(screenId) {
+    ensureMusicPlays();
     document.getElementById('screen-menu').classList.add('d-none');
+    document.getElementById('screen-leaderboard').classList.add('d-none');
     document.getElementById('screen-game').classList.add('d-none');
     document.getElementById(screenId).classList.remove('d-none');
-    if (screenId === 'screen-menu') renderLeaderboard();
+
+    if (screenId === 'screen-leaderboard') {
+        renderLeaderboard();
+    }
 }
 
 function exitToMenu() {
     clearInterval(timerInterval);
+    gameEnded = true;
     showScreen('screen-menu');
 }
 
@@ -50,6 +62,7 @@ function startGame() {
     steps = 0;
     seconds = 0;
     gameStarted = false;
+    gameEnded = false;
     flippedCards = [];
     instantFinderActive = false;
     lockBoard = false;
@@ -117,7 +130,7 @@ function startTimer() {
 }
 
 function handleCardClick(card) {
-    if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched') || clicksLeft <= 0) return;
+    if (gameEnded || lockBoard || card.classList.contains('flipped') || card.classList.contains('matched') || clicksLeft <= 0) return;
 
     startTimer();
     clicksLeft--;
@@ -128,13 +141,16 @@ function handleCardClick(card) {
         card.classList.add('bonus', 'matched');
         if (card.dataset.value === '+3') {
             clicksLeft += 3;
+            updateUI();
+            checkGameOver();
         } else if (card.dataset.value === 'finder') {
             instantFinderActive = true;
+            updateUI();
+            checkGameOver();
         } else if (card.dataset.value === 'lightning') {
+            updateUI();
             triggerLightning();
         }
-        updateUI();
-        checkGameOver();
         return;
     }
 
@@ -167,8 +183,10 @@ function handleCardClick(card) {
             c2.classList.add('matched');
             flippedCards = [];
             lockBoard = false;
+            updateUI();
             checkGameOver();
         } else {
+            updateUI();
             setTimeout(() => {
                 c1.classList.remove('flipped');
                 c2.classList.remove('flipped');
@@ -177,8 +195,11 @@ function handleCardClick(card) {
                 checkGameOver();
             }, 750);
         }
+        return;
     }
+
     updateUI();
+    checkGameOver();
 }
 
 function triggerLightning() {
@@ -192,6 +213,7 @@ function triggerLightning() {
     setTimeout(() => {
         hiddenCards.forEach(c => c.classList.remove('peeked'));
         lockBoard = false;
+        checkGameOver();
     }, 700);
 }
 
@@ -203,20 +225,34 @@ function updateUI() {
 }
 
 function checkGameOver() {
-    const unmatchedPairs = document.querySelectorAll('.game-card[data-type="pair"]:not(.matched)');
-    if (unmatchedPairs.length === 0) {
+    if (gameEnded || lockBoard) return;
+
+    const totalPairs = cardImages.length;
+    const matchedCards = document.querySelectorAll('.game-card[data-type="pair"].matched').length;
+    const pairsFound = Math.floor(matchedCards / 2);
+
+    if (pairsFound === totalPairs) {
+        gameEnded = true;
         clearInterval(timerInterval);
         const finalTime = document.getElementById('timer').innerText;
-        lastRunData = { clicks: clicksLeft, timeStr: finalTime, seconds: seconds };
-        showEndModal('Nyertél!', `Idő: <b>${finalTime}</b> | Lépések: <b>${steps}</b> | Maradt kattintás: <b>${clicksLeft}</b>`, true);
-    } else if (clicksLeft <= 0 && !lockBoard) {
+        lastRunData = { pairs: pairsFound, clicks: clicksLeft, timeStr: finalTime, seconds: seconds };
+        showEndModal(
+            'Nyertél!',
+            `Idő: <b>${finalTime}</b> | Lépések: <b>${steps}</b> | Maradt kattintás: <b>${clicksLeft}</b>`
+        );
+    } else if (clicksLeft <= 0) {
+        gameEnded = true;
         clearInterval(timerInterval);
-        lastRunData = null;
-        showEndModal('Elfogytak a kattintások!', `Lépések száma: <b>${steps}</b>`, false);
+        const finalTime = document.getElementById('timer').innerText;
+        lastRunData = { pairs: pairsFound, clicks: 0, timeStr: finalTime, seconds: seconds };
+        showEndModal(
+            'Elfogytak a kattintások!',
+            `Megtalált párok: <b>${pairsFound}/${totalPairs}</b> | Idő: <b>${finalTime}</b> | Lépések: <b>${steps}</b>`
+        );
     }
 }
 
-function showEndModal(title, htmlText, isWin) {
+function showEndModal(title, htmlText) {
     document.getElementById('modal-title').innerText = title;
     document.getElementById('modal-text').innerHTML = htmlText;
 
@@ -224,16 +260,13 @@ function showEndModal(title, htmlText, isWin) {
     const feedback = document.getElementById('save-feedback');
     const saveBtn = document.getElementById('btn-save-score');
 
-    if (isWin) {
-        saveBox.classList.remove('d-none');
-        feedback.classList.add('d-none');
-        saveBtn.disabled = false;
-    } else {
-        saveBox.classList.add('d-none');
-    }
+    saveBox.classList.remove('d-none');
+    feedback.classList.add('d-none');
+    saveBtn.disabled = false;
 
-    const modal = new bootstrap.Modal(document.getElementById('endGameModal'));
-    setTimeout(() => modal.show(), 350);
+    const modalEl = document.getElementById('endGameModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    setTimeout(() => modal.show(), 250);
 }
 
 async function saveCurrentScore() {
@@ -249,6 +282,7 @@ async function saveCurrentScore() {
 
     const newEntry = {
         name: name,
+        pairs: lastRunData.pairs,
         clicks: lastRunData.clicks,
         timeStr: lastRunData.timeStr,
         seconds: lastRunData.seconds,
@@ -267,7 +301,6 @@ async function saveCurrentScore() {
         feedback.classList.remove('d-none', 'text-danger');
         feedback.classList.add('text-success');
         feedback.innerText = 'Elmentve az online ranglistára!';
-        renderLeaderboard();
     } catch (err) {
         saveBtn.disabled = false;
         feedback.classList.remove('d-none', 'text-success');
@@ -282,29 +315,33 @@ async function renderLeaderboard() {
     const listEl = document.getElementById('leaderboard-list');
     if (!listEl) return;
 
-    listEl.innerHTML = '<div class="text-center" style="color: #a89078;">Betöltés...</div>';
+    listEl.innerHTML = '<div class="text-center py-3" style="color: #a89078;">Betöltés...</div>';
 
     try {
         const res = await fetch(`${FIREBASE_URL}/scores.json`);
         const data = await res.json();
 
         if (!data) {
-            listEl.innerHTML = '<div class="text-center" style="color: #a89078;">Még nincs mentett eredmény.</div>';
+            listEl.innerHTML = '<div class="text-center py-3" style="color: #a89078;">Még nincs mentett eredmény.</div>';
             return;
         }
 
-        const scores = Object.values(data);
-        scores.sort((a, b) => b.clicks - a.clicks || a.seconds - b.seconds);
-        const top5 = scores.slice(0, 5);
+        const scores = Object.values(data).map(s => ({
+            ...s,
+            pairs: s.pairs !== undefined ? s.pairs : cardImages.length
+        }));
 
-        listEl.innerHTML = top5.map((s, idx) => `
+        scores.sort((a, b) => b.pairs - a.pairs || b.clicks - a.clicks || a.seconds - b.seconds);
+        const top15 = scores.slice(0, 15);
+
+        listEl.innerHTML = top15.map((s, idx) => `
             <div class="leaderboard-row">
-                <span><b>${idx + 1}.</b> ${escapeHtml(s.name)}</span>
-                <span><b class="text-warning">${s.clicks} katt</b> · ${s.timeStr}</span>
+                <span><b class="me-2" style="color: #d97706;">${idx + 1}.</b> ${escapeHtml(s.name)}</span>
+                <span><b class="text-info">${s.pairs}/6 pár</b> · <b class="text-warning">${s.clicks} katt</b> · ${s.timeStr}</span>
             </div>
         `).join('');
     } catch (err) {
-        listEl.innerHTML = '<div class="text-center text-danger">Nem sikerült betölteni a ranglistát.</div>';
+        listEl.innerHTML = '<div class="text-center py-3 text-danger">Nem sikerült betölteni a ranglistát.</div>';
     }
 }
 
