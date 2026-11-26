@@ -9,32 +9,72 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <audio autoplay>
-        <source src="./audio/GTA III FULL Theme HQ.mp3" type="audio/mpeg">
-        <source src="./audio/GTA III FULL Theme HQ.ogg" type="audio/ogg">
-    </audio>
-    <table class="center">
-        <tr>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-        </tr>
-        <tr>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-        </tr>
-        <tr>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-            <td><img src="./img/card back.png" class="rotate" alt="Lefordított kártya" width="180"></td>
-        </tr>
-    </table>
+<audio autoplay>
+
+    <source src="./audio/GTA III FULL Theme HQ.mp3" type="audio/mpeg">
+
+    <source src="./audio/GTA III FULL Theme HQ.ogg" type="audio/ogg">
+
+</audio>
+<div class="container py-3">
+
+    <div id="screen-menu" class="menu-box text-center mx-auto">
+        <h1 class="game-title mb-4">Memóriajáték</h1>
+        <button class="btn btn-start mb-4" onclick="startGame()">Játék</button>
+
+        <div class="leaderboard-box text-start mt-2">
+            <h5 class="text-center mb-3" style="color: #e6ccb2; letter-spacing: 1px;">TOP 5 EREDMÉNY</h5>
+            <div id="leaderboard-list" class="small"></div>
+        </div>
+    </div>
+
+    <div id="screen-game" class="mx-auto d-none" style="max-width: 1050px;">
+        <div class="top-bar d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <button class="btn btn-sm btn-dark-wood" onclick="exitToMenu()">Menü</button>
+            
+            <div class="d-flex gap-3">
+                <div class="stat-item">Idő: <span id="timer" class="fw-bold">00:00</span></div>
+                <div class="stat-item">Lépés: <span id="steps" class="fw-bold">0</span></div>
+                <div class="stat-item">Kattintás: <span id="clicks-left" class="fw-bold text-warning">16</span></div>
+            </div>
+
+            <button class="btn btn-sm btn-dark-wood" onclick="startGame()">Újra</button>
+        </div>
+
+        <div style="min-height: 30px;" class="text-center mb-2">
+            <span id="buff-indicator" class="badge bg-warning text-dark px-3 py-2 d-none">
+                Instant Finder aktív – a következő kártya párja azonnal felfordul!
+            </span>
+        </div>
+
+        <div id="board"></div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="endGameModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content wood-modal text-center p-4">
+            <h2 id="modal-title" class="fw-bold mb-2">Nyertél!</h2>
+            <p id="modal-text" class="mb-3"></p>
+
+            <div id="save-score-box" class="mb-4 d-none">
+                <div class="input-group mx-auto" style="max-width: 300px;">
+                    <input type="text" id="player-name" class="form-control wood-input" placeholder="Neved..." maxlength="15">
+                    <button class="btn btn-start fs-6 py-2 px-3" id="btn-save-score" onclick="saveCurrentScore()">Mentés</button>
+                </div>
+                <div id="save-feedback" class="small text-success mt-1 d-none">Elmentve a ranglistára!</div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+                <button class="btn btn-outline-light px-4" data-bs-dismiss="modal" onclick="exitToMenu()">Menü</button>
+                <button class="btn btn-start fs-6 py-2 px-4" data-bs-dismiss="modal" onclick="startGame()">Újrajátszás</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
